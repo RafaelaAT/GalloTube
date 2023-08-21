@@ -22,7 +22,7 @@ public class Video
     [Column(TypeName = "Ano")]
     [Display(Name = "Ano de Upload")]
     [Required(ErrorMessage = "O Ano de Upload é obrigatório")]
-    public Int16 UploadTime { get; set; }
+    public DateTime UploadDate { get; set; }
 
     [Display(Name = "Duração (em minutos)")]
     [Required(ErrorMessage = "A Duração é obrigatória")]
@@ -34,7 +34,7 @@ public class Video
 
     [Display(Name = "Arquivos de vídeo")]
     [Required(ErrorMessage = "Os arquivos são obrigatórios")]
-    public Int16 VideoFile { get; set; }
+    public string VideoFile { get; set; }
 
     public ICollection<VideoTag> Tag { get; set; }
 }

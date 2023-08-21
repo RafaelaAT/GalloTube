@@ -1,11 +1,11 @@
 ﻿@model List<GalloTube.Models.Video>
 @{
-    ViewData["Name"] = "Home";
+    ViewData["Title"] = "Home";
 }
 
 <div class="album py-5">
     <div class="text-center mb-5">
-        <h1 class="display-4">Tudo sobre o mundo dos Videos</h1>
+        <h1 class="display-4">Tudo sobre o mundo dos Vídeos</h1>
     </div>
 
     <div class="container">
@@ -20,6 +20,7 @@
                     <div class="card-body">
                         <p class="card-text text-center">@video.Name</p>
                         <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-body-secondary">@video.UploadDate</small>
                             <small class="text-body-secondary">@video.Duration</small>
                         </div>
                     </div>
@@ -29,4 +30,3 @@
         </div>
     </div>
 </div>
-

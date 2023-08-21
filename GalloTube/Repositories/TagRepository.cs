@@ -12,7 +12,7 @@ public class TagRepository : ITagRepository
     public void Create(Tag model)
     {
         MySqlConnection connection = new(connectionString);
-        string sql = "insert into Genre(Name) values (@Name)";
+        string sql = "insert into Tag(Name) values (@Name)";
         MySqlCommand command = new(sql, connection)
         {
             CommandType = CommandType.Text
