@@ -6,7 +6,7 @@ namespace GalloTube.Models;
 public class VideoTag
 {
     [Key, Column(Order = 1)]
-    public int MovieId { get; set; }
+    public int VideoId { get; set; }
     [ForeignKey("VideoId")]
     public Video Video { get; set; }
 

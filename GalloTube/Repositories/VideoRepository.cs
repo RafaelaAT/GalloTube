@@ -8,12 +8,19 @@ namespace GalloTube.Repositories;
 public class VideoRepository : IVideoRepository
 {
     readonly string connectionString = "server=localhost;port=3306;database=GalloTubedb;uid=root;pwd=''";
+    readonly IVideoTagRepository _videoTagRepository;
+
+    public VideoRepository(IVideoTagRepository videoTagRepository)
+    {
+        _videoTagRepository = videoTagRepository;
+    }
+
 
     public void Create(Video model)
     {
         MySqlConnection connection = new(connectionString);
-        string sql = "insert into Video(Name, Description, UploadDate, Duration, Thumbnail, VideoFile) "
-              + "values (@Name, @Description, @UploadDate, @Duration, @Thumbnail, @VideoFile)";
+        string sql = "insert into Video(Name, Description, UploadDate, Duration, AgeRating, Thumbnail) "
+              + "values (@Title, @Synopsis, @UploadDate, @Duration, @AgeRating, @Image)";
         MySqlCommand command = new(sql, connection)
         {
             CommandType = CommandType.Text
@@ -22,9 +29,9 @@ public class VideoRepository : IVideoRepository
         command.Parameters.AddWithValue("@Description", model.Description);
         command.Parameters.AddWithValue("@UploadDate", model.UploadDate);
         command.Parameters.AddWithValue("@Duration", model.Duration);
-        command.Parameters.AddWithValue("@Thumbnail", model.Thumbnail);
-        command.Parameters.AddWithValue("@VideoFile", model.VideoFile);
-       
+        command.Parameters.AddWithValue("@AgeRating", model.AgeRating);
+        command.Parameters.AddWithValue("@Image", model.Image);
+        
         connection.Open();
         command.ExecuteNonQuery();
         connection.Close();
@@ -33,105 +40,127 @@ public class VideoRepository : IVideoRepository
     public void Delete(int? id)
     {
         MySqlConnection connection = new(connectionString);
-        string sql = "delete from Video where Id = @Id";
+        string sql = "delete from Movie where Id = @Id";
         MySqlCommand command = new(sql, connection)
         {
             CommandType = CommandType.Text
         };
         command.Parameters.AddWithValue("@Id", id);
-       
+        
         connection.Open();
         command.ExecuteNonQuery();
         connection.Close();
     }
 
-    public List<Video> ReadAll()
+    public List<Movie> ReadAll()
     {
         MySqlConnection connection = new(connectionString);
-        string sql = "select * from Video";
+        string sql = "select * from Movie";
         MySqlCommand command = new(sql, connection)
         {
             CommandType = CommandType.Text
         };
-       
-        List<Video> videos = new();
+        
+        List<Movie> Movies = new();
         connection.Open();
         MySqlDataReader reader = command.ExecuteReader();
         while (reader.Read())
         {
-            Video video = new()
+            Movie Movie = new()
             {
                 Id = reader.GetInt32("id"),
-                Name = reader.GetString("name"),
-                Description = reader.GetString("description"),
-                UploadDate = reader.GetDateTime("uploaddate"),
+                Title = reader.GetString("title"),
+                OriginalTitle = reader.GetString("originalTitle"),
+                Synopsis = reader.GetString("synopsis"),
+                MovieYear = reader.GetInt16("movieYear"),
                 Duration = reader.GetInt16("duration"),
-                Thumbnail = reader.GetString("thumbnail"),
-                VideoFile = reader.GetString("videofile")
+                AgeRating = reader.GetByte("ageRating"),
+                Image = reader.GetString("image")
             };
-            videos.Add(video);
+            Movies.Add(Movie);
         }
         connection.Close();
-        return videos;
+        return Movies;
     }
 
-    public Video ReadById(int? id)
+    public Movie ReadById(int? id)
     {
         MySqlConnection connection = new(connectionString);
-        string sql = "select * from Video where Id = @Id";
+        string sql = "select * from Movie where Id = @Id";
         MySqlCommand command = new(sql, connection)
         {
             CommandType = CommandType.Text
         };
         command.Parameters.AddWithValue("@Id", id);
-       
+        
         connection.Open();
         MySqlDataReader reader = command.ExecuteReader();
         reader.Read();
         if (reader.HasRows)
         {
-            Video video = new()
+            Movie Movie = new()
             {
                 Id = reader.GetInt32("id"),
-                Name = reader.GetString("name"),
-                Description = reader.GetString("description"),
-                UploadDate = reader.GetDateTime("uploaddate"),
+                Title = reader.GetString("title"),
+                OriginalTitle = reader.GetString("originalTitle"),
+                Synopsis = reader.GetString("synopsis"),
+                MovieYear = reader.GetInt16("movieYear"),
                 Duration = reader.GetInt16("duration"),
-                Thumbnail = reader.GetString("thumbnail"),
-                VideoFile = reader.GetString("videofile")
+                AgeRating = reader.GetByte("ageRating"),
+                Image = reader.GetString("image")
             };
             connection.Close();
-            return video;
+            return Movie;
         }
         connection.Close();
         return null;
     }
 
-    public void Update(Video model)
+    public void Update(Movie model)
     {
         MySqlConnection connection = new(connectionString);
-        string sql = "update Video set "
-                        + "Name = @Name, "
-                        + "Description = @Description, "
-                        + "UploadDate = @UploadDate, "
+        string sql = "update Movie set "
+                        + "Title = @Title, "
+                        + "OriginalTitle = @OriginalTitle, "
+                        + "Synopsis = @Synopsis, "
+                        + "MovieYear = @MovieYear, "
                         + "Duration = @Duration, "
-                        + "Thumbnail = @Thumbnail, "
-                        + "VideoFile = @VideoFile, "
+                        + "AgeRating = @AgeRating, "
+                        + "Image = @Image "
                     + "where Id = @Id";
         MySqlCommand command = new(sql, connection)
         {
             CommandType = CommandType.Text
         };
         command.Parameters.AddWithValue("@Id", model.Id);
-        command.Parameters.AddWithValue("@Name", model.Name);
-        command.Parameters.AddWithValue("@Description", model.Description);
-        command.Parameters.AddWithValue("@UploadDate", model.UploadDate);
+        command.Parameters.AddWithValue("@Title", model.Title);
+        command.Parameters.AddWithValue("@OriginalTitle", model.OriginalTitle);
+        command.Parameters.AddWithValue("@Synopsis", model.Synopsis);
+        command.Parameters.AddWithValue("@MovieYear", model.MovieYear);
         command.Parameters.AddWithValue("@Duration", model.Duration);
-        command.Parameters.AddWithValue("@Thumbnail", model.Thumbnail);
-        command.Parameters.AddWithValue("@VideoFile", model.VideoFile);
-       
+        command.Parameters.AddWithValue("@AgeRating", model.AgeRating);
+        command.Parameters.AddWithValue("@Image", model.Image);
+        
         connection.Open();
         command.ExecuteNonQuery();
         connection.Close();
     }
+
+    public List<Movie> ReadAllDetailed()
+    {
+        List<Movie> Movies = ReadAll();
+        foreach (Movie movie in Movies)
+        {
+            movie.Genres = _movieGenreRepository.ReadGenresByMovie(movie.Id);
+        }
+        return Movies;
+    }
+
+    public Movie ReadByIdDetailed(int id)
+    {
+        Movie movie = ReadById(id);
+        movie.Genres = _movieGenreRepository.ReadGenresByMovie(movie.Id);
+        return movie;
+    }
 }
+

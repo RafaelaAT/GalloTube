@@ -19,7 +19,6 @@ public class Video
     [StringLength(8000, ErrorMessage = "A Descrição deve possuir no máximo 5000 caracteres")]
     public string Description { get; set; }
 
-    [Column(TypeName = "Ano")]
     [Display(Name = "Ano de Upload")]
     [Required(ErrorMessage = "O Ano de Upload é obrigatório")]
     public DateTime UploadDate { get; set; }
